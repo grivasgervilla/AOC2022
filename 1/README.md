@@ -330,3 +330,58 @@ void actualizar_ranking(int ranking[], int calorias_grupo_actual) {
 ````
 
 Sobre el código anterior solo queda hacer un apunte, y es sobre la condición del `if`. Como podemos ver, accedemos a `ranking[pos_en_ranking]`. Pero, ¿qué sucede si `pos_en_ranking` vale `-1`? Podríamos pensar que el programa acabará de forma abrupta debido a un error, pero, en cambio, esto no ocurre. ¿Por qué? Por como evalúa C++ las expresiones booleanas. Y es que tenemos la condición `pos_en_ranking == -1 || ranking[pos_en_ranking] > ranking[pos]`, entonces, como lo primero que comprobamos es si `pos_en_ranking` es `-1`, si esto es cierto, que es el caso que puede dar problemas, ya sabemos que toda esa condición es verdadera, puesto que verdadero o lo que sea, es verdadero. Por tanto, C++ no evalúa la segunda parte del o, y no surge el problema comentado. De todos modos, si esto nos resulta lioso, siempre podemos descomponer la condición que hemos usado en el `if` por varios condicionales anidados.
+
+# Otra solución para la parte 1: para repasar la memoria dinámica y otros conceptos
+
+En el fichero [1.cpp](https://github.com/Griger/AOC2022/blob/main/1/1.cpp) os proponemos una solución algo más compleja que la que hemos planteado anteriormente para la parte 1 de este reto. Es mejor hacer las soluciones cuanto más simples mejor. En cambio, hemos decidido elaborar otro tipo de solución en la que se vea involucrada la memoria dinámica, a modo de ejemplo ilustrativo.
+
+Siguiendo un poco más la semántica que da el enunciado original vamos a declarar un `struct Elfo`, en el que para cada elfo almacenaremos:
+
+- Su identificador, como un entero.
+- Las calorías que lleva, como un `int *`, de modo que podamos reservar espacio para tantas cifras como registros de calorías haya en la entrada del problema para ese elfo. Habrá elfos que tengan solo dos datos, y elfos que tengan 100.
+- El número total de entradas de calorías que se tienen para ese elfo: como para cada elfo tendremos una cantidad distinta tenemos que saber cuántos valores hemos de recorrer para cada uno. No es como reservar un número fijo de posiciones para todos los elfos. Entonces necesitaremos esta variable para luego, por ejemplo, parar en los bucles donde recorramos sus entradas de calorías.
+
+````c++
+struct Elfo {
+    int id;
+    int numero_entradas;
+    int *calorias;
+};
+````
+
+Vamos a declarar también una función que, dados los datos de un elfo, nos devuelta el total de calorías que lleva ese elfo, que será un valor entero. Para ello, como no necesitamos modificar los datos del elfo dentro de la función, pero nos queremos ahorar la copia de pasarlo por valor, pasaremos el objeto `Elfo` por referencia y constante:
+
+````c++
+int total_calorias(const Elfo &elfo)
+````
+
+El código de esta función es muy sencillo, ya que únicamente necesitamos sumar todas las entrada de calorías que tengamos para ese elfo, para ellos nos ayudaremos del campo `numero_entradas`, para saber cuántos datos recorrer en el bucle `for` que usamos:
+
+````c++
+int total_calorias(const Elfo &elfo) {
+int suma_calorias = 0;
+
+    for (int pos = 0; pos < elfo.numero_entradas; ++pos) {
+        suma_calorias += elfo.calorias[pos];
+    }
+
+    return suma_calorias;
+}
+````
+
+> Aquí podemos ver cómo para recorrer los distintos datos de la memoria reservada por el campo `int *calorias`, lo hacemos como lo hacemos para cualquier vector, usando los corchetes. Como sabemos `calorias` apunta a la primera posición de memoria reservada, y ya, con **aritmética de punteros**, el operador `[]`, se encarga de acceder al dato concreto que necesitemos.
+
+Ahora ya nos queda en el programa principal reservar memoria para toda la información que necesitamos, y rellenar dicha memoria. La reserva de memoria la tenemos que hacer en dos pasos:
+
+1. En primer lugar, vamos a declarar una variable para almacenar los datos de todos los `Elfos`, nuevamente lo vamos a hacer con memoria dinámica, ya que nos sabemos cuántos elfos habrá en nuestra entrada. Con lo que declaramos una variable `Elfo *elfos`, con la que reservaremos memoria más adelante.
+2. Una vez tengamos la memoria reservada para guardas los datos de cada elfo, tendremos que reservar, para cada elfo la memoria necesaria para almacenar sus calorías, que habrá que reservar espacio para tantos `int`, como entradas de calorías para cada elfo en particular haya en la entrada de nuestro programa.
+3. Una vez hagamos esto, rellenaremos estas últimas porciones de memoria reservadas con los datos correspondientes para cada elfo.
+
+> Nos podríamos preguntar cómo sabes cuánta memoria tenemos que reservar para almacenar todos los elfos, en el primer paso anterior, si no sabemos cuánta memoria va a necesitar cada elfo para almacenar sus calorías.
+> 
+> Esto es muy sencillo, y es que cuando reservamos memoria para los elfos, no reservamos memoria para almacenar sus datos de calorías, reservamos memoria solo para almacenar un puntero a `int`, que apuntará a la porción de memoria que reservemos a posteriori para las calorías de cada elfo. Por tanto, en la porción de memoria reservada para `elfos`, **no tenemos almacenada también la información de las calorías de cada elfo**, tenemos únicamente reservada la dirección de memoria a partir de la cual encontramos esa información para cada elfo, y C++ sí que sabe cuánto ocupa esa información, en concreto en este caso ocupará lo que pese un puntero a `int`, que será el mismo peso para todos los elfos.
+> 
+> Las porciones de memoria reservadas para las calorías de cada elfo estarán dispersas por memoria (como se representa en la siguiente imagen), y en la variable `elfos`, para cada posición (para cada elfo), se almacenará únicamente el puntero a esa porción de memoria, representados por las flechas en la imagen.
+> 
+> ![representación de la memoria dinámica para los elfos](https://github.com/Griger/AOC2022/blob/main/1/img/memoria-dinamica.png)
+
