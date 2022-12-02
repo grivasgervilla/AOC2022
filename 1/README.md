@@ -17,7 +17,7 @@ La primera parte del problema consiste en encontrar el grupo para el que la suma
 
 Vamos a ver cómo resolvemos estos dos ejercicios.
 
-# Lectura de un fichero de datos en `C++`
+# Lectura de un fichero de datos en C++
 
 >El trabajo con ficheros no es un objetivo de esta asignatura, con lo que no necesitas conocer esto de cara a los exámenes. Se proporciona el código para la lectura del fichero de entrada para el reto, ya que, de otro modo, sería muy engorroso intentar resolver los retos del Advent of Code.
 
@@ -178,7 +178,7 @@ Por lo tanto, **necesitamos una segunda variable** donde ir acumulando la suma d
 
 1. Inicializamos a cero la variable `calorias_grupo_actual`, ya que vamos a ir acumulando ahí las calorías del grupo que estemos analizando y, por tanto, no queremos que contenga un *valor basura*.
 2. Para cada línea no vacía que encontremos, sabemos que una cantidad de calorías más del grupo actual, con lo que acumulamos su valor para el grupo actual, haciendo uso de la función `stoi` para convertirla en entero.
-3. Si la línea que encontramos es vacía habremos llegado al final del grupo actual, con lo que pasaremos a actualizar, si procede, la cantidad de calorías máximas de un grupo. Y además tendremos que re-inicializar a cero la variable donde pasaremos a acumular las calorías del siguiente grupo, la tenemos que volver a poner a cero para que la suma sea correcta.
+3. Si la línea que encontramos es vacía habremos llegado al final del grupo actual, con lo que pasaremos a actualizar, si procede, la cantidad de calorías máximas de un grupo. Y además tendremos que re-inicializar a cero la variable donde pasaremos a acumular las calorías del siguiente grupo, la tenemos que volver a poner a cero para que la suma sea correcta. Observa que esto último lo hacemos **fuera del `if`**, tenemos que poner de nuevo esa variable a cero, actualicemos el máximo o no.
 4. Por último tenemos que tener en cuenta algo que es una particularidad de la entrada que nos dan desde el Advent of Code. Y es que después del último grupo no hay una línea en blanco. Por lo tanto, para el último grupo no se entra en el `else` del bucle, y no se actualizaría el máximo si es necesario para ese grupo. Por ello, hacemos esto después del bucle `while` para asegurarnos de que hacemos las operaciones necesarias para cada grupo también para el grupo final.
 
 ```c++
@@ -219,3 +219,114 @@ int main(){
     return 0;
 }
 ```
+
+# Solución de la segunda parte
+
+En esta segunda parte del problema, en lugar de obtener el grupo con más calorías, y devolver la suma de estas. Lo que tenemos que hacer es obtener **los tres grupos** con más calorías, y calcular la suma de sus calorías en total.
+
+Por tanto, la lógica del problema es la misma, salvo la actualización del máximo. Así, en aquellos puntos donde antes actualizábamos el máximo, que eran en los puntos donde acabábamos de leer un grupo, ahora tendremos que actualizar un ranking de tres grupos. Quedándonos al final con las tres sumas de calorías mayores de entre todos los grupos. Ese ranking son al final tres datos enteros, y que almacenaremos en un vector `int ranking[3]`, el cual iremos actualizando para cada suma de calorías nuevas que obtengamos, igual que hacíamos antes con el mínimo.
+
+Para facilitar la adaptación de la solución anterior al nuevo problema, **y no repetir código**, vamos a crear una función que se encargue de actualizar el ranking cada vez que sea necesario. De modo que en aquellos puntos donde antes actualizábamos el máximo con un `if`, ahora lo que haremos será la función encargada de actualizar el máximo. Veamos primero cómo quedaría el código anterior con esta modificación, y luego pasaremos a ver en profundidad la función.
+
+```c++
+#include <iostream>
+#include <string>
+#include <fstream>
+
+using namespace std;
+
+const int TOP = 3;
+
+int main() {
+    string ruta_archivo_entrada = "input.txt";
+    fstream archivo_entrada;
+
+    int calorias_grupo_actual = 0;
+
+    int ranking[TOP] = {0, 0, 0};
+
+    archivo_entrada.open(ruta_archivo_entrada, ios::in);
+
+    if (archivo_entrada.is_open()) {
+        string linea;
+
+        while (getline(archivo_entrada, linea)) {
+            if (linea != "") {
+                calorias_grupo_actual += stoi(linea);
+            } else {
+                actualizar_ranking(ranking, calorias_grupo_actual);
+                calorias_grupo_actual = 0;
+            }
+        }
+
+        actualizar_ranking(ranking, calorias_grupo_actual);
+        archivo_entrada.close();
+
+        int total = 0;
+
+        for (int pos = 0; pos < TOP; ++pos)
+            total += ranking[pos];
+
+        cout << "Las calorias totales de los " << TOP << " elfos que llevan mas calorias es " << total << endl;
+    } else {
+        cout << "Error al abrir el archivo." << endl;
+    }
+
+    return 0;
+}
+```
+
+Observa que el código anterior es muy parecido al de la solución de la primera parte del reto. Además de sustituir la actualización del máximo, por las llamadas a la función, lo único que hemos añadido es sumar los tres elementos finales del ranking para obtener el resultado deseado.
+
+Señalar también que en lugar de usar directamente el valor `3`, que sabemos que es el tamaño del vector en el que almacenaremos el ranking, hemos declarado una constante `const int TOP = 3`, para evitar nuevamente los *números mágicos* y aumentar la legibilidad de nuestro código.
+
+## La función para actualizar el ranking
+
+Para actualizar el ranking hemos definido una función que recibe:
+
+1. El ranking a actualizar, es decir, el vector que queremos modificar.
+2. La suma de calorías del grupo actual, que tenemos que introducir en el ranking si procede.
+
+Entonces la cabecera de la función será:
+
+````c++
+void actualizar_ranking(int ranking[], int calorias_grupo_actual)
+````
+
+No necesitamos que la función devuelva nada, ya que lo único que queremos que haga es que modifique el vector `ranking` que le pasamos como parámetro; por esto la declaramos como una función `void`.
+
+> Ten en cuenta que los vectores en C++ **se pasan siempre por referencia**, es decir, no necesitamos añadir nosotros el `&` para indicar esto.
+> 
+> Al pasarse por referencia tenemos asegurado que las modificaciones que hagamos en el vector `ranking` que pasamos como parámetro quedará modificado como deseemos.
+> 
+> Esto también conlleva un riesgo :warning:, y es que habrá casos en los que pasemos un vector, pero no queramos modificarlo, sino solo consultarlo. Por lo tanto, hemos de tener cuidado con **no modificar el vector pasado como parámetro** dentro del código de la función.
+
+Ahora veamos cómo actualizar el ranking:
+
+- En el ranking habrá siempre tres valores, que al principio serán todos $0$.
+- Introduciremos un nuevo valor en el ranking si es *mayor que alguno de los valores en el ranking*.
+- Puede que un valor sea mayor que varios valores en el ranking, en cuyo caso cambiaremos su valor por el más pequeño de ellos, ya que en el ranking queremos que queden los tres valores mayores. Piensa en que el ranking actual es $\lbrace 30, 20, 10 \rbrace$. Y que ahora queremos ver si el valor $40$ ha de entrar en el ranking. Como es mayor que el $30$ podemos pensar que entonces simplemente tenemos que pasar al ranking $\lbrace 40, 20, 10 \rbrace$, pero esto no sería correcto, ya que el ranking real debería ser $\lbrace 40, 30, 20 \rbrace$, donde hemos sustituido el valor $10$ que, de entre todos los valores menores que $40$, es el menor.
+
+Teniendo esto en cuenta, el algoritmo para actualizar el ranking sería:
+
+1. Buscaremos la posición del vector en la que introducir el nuevo valor si procede (el vector no estará ordenado, para ahorrarnos el paso de ordenar un vector que puede ser más complejo). Inicialmente, la posición donde insertar el nuevo valor será `-1`. Un valor inválido, y en caso de no encontrar ningún valor en el ranking, menor que el nuevo valor, quedará con el valor `-1`, lo que nos servirá como indicativo de que no hay que insertar el nuevo valor en el ranking.
+2. Recorremos el ranking. Para cada valor en el ranking, que sea menor que el nuevo valor entonces pueden ocurrir dos cosas:
+   - Que la posición sea `-1` y, por tanto, aún no hayamos encontrado ningún otro candidato en el ranking a ser sustituido, es decir, no hemos encontrado ningún otro valor en el ranking que sea menor que el nuevo valor. Entonces la posición pasa a ser la de ese valor del ranking, y **ya no es `-1`**.
+   - Que la posición no sea `-1`, lo que significa que ya habíamos encontrado un posible candidato a ser sustituido. En ese caso tendremos que comprobar si el nuevo candidato del ranking es menor que el anterior candidato, y entonces la posición pasaría a ser la de este nuevo candidato.
+
+Con esto en mente el cuerpo de la función pasaría a ser el siguiente:
+
+````c++
+void actualizar_ranking(int ranking[], int calorias_grupo_actual) {
+    int pos_en_ranking = -1;
+
+    for (int pos = 0; pos < TOP; ++pos)
+        if (calorias_grupo_actual > ranking[pos] && (pos_en_ranking == -1 || ranking[pos_en_ranking] > ranking[pos]))
+            pos_en_ranking = pos;
+
+    if (pos_en_ranking != -1)
+        ranking[pos_en_ranking] = calorias_grupo_actual;
+}
+````
+
+Sobre el código anterior solo queda hacer un apunte, y es sobre la condición del `if`. Como podemos ver, accedemos a `ranking[pos_en_ranking]`. Pero, ¿qué sucede si `pos_en_ranking` vale `-1`? Podríamos pensar que el programa acabará de forma abrupta debido a un error, pero, en cambio, esto no ocurre. ¿Por qué? Por como evalúa C++ las expresiones booleanas. Y es que tenemos la condición `pos_en_ranking == -1 || ranking[pos_en_ranking] > ranking[pos]`, entonces, como lo primero que comprobamos es si `pos_en_ranking` es `-1`, si esto es cierto, que es el caso que puede dar problemas, ya sabemos que toda esa condición es verdadera, puesto que verdadero o lo que sea, es verdadero. Por tanto, C++ no evalúa la segunda parte del o, y no surge el problema comentado. De todos modos, si esto nos resulta lioso, siempre podemos descomponer la condición que hemos usado en el `if` por varios condicionales anidados.

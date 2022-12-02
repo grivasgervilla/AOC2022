@@ -6,15 +6,15 @@ using namespace std;
 
 const int TOP = 3;
 
-void actualizar_ranking(int ranking[], int calorias_actuales) {
+void actualizar_ranking(int ranking[], int calorias_grupo_actual) {
     int pos_en_ranking = -1;
 
     for (int pos = 0; pos < TOP; ++pos)
-        if (calorias_actuales > ranking[pos] && (pos_en_ranking == -1 || ranking[pos_en_ranking] > ranking[pos]))
+        if (calorias_grupo_actual > ranking[pos] && (pos_en_ranking == -1 || ranking[pos_en_ranking] > ranking[pos]))
             pos_en_ranking = pos;
 
     if (pos_en_ranking != -1)
-        ranking[pos_en_ranking] = calorias_actuales;
+        ranking[pos_en_ranking] = calorias_grupo_actual;
 }
 
 int main() {
@@ -22,7 +22,7 @@ int main() {
     string ruta_archivo_entrada = "input.txt";
     fstream archivo_entrada;
 
-    int calorias_actuales = 0;
+    int calorias_grupo_actual = 0;
 
     int ranking[TOP] = {0, 0, 0}; // Vector en el que almacenamos el top 3 de calorias totales.
 
@@ -35,14 +35,14 @@ int main() {
 
         while (getline(archivo_entrada, linea)) {
             if (linea != "") {
-                calorias_actuales += stoi(linea);
+                calorias_grupo_actual += stoi(linea);
             } else {
-                actualizar_ranking(ranking, calorias_actuales);
-                calorias_actuales = 0;
+                actualizar_ranking(ranking, calorias_grupo_actual);
+                calorias_grupo_actual = 0;
             }
         }
 
-        actualizar_ranking(ranking, calorias_actuales);
+        actualizar_ranking(ranking, calorias_grupo_actual);
         archivo_entrada.close();
 
         int total = 0;
