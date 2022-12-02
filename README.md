@@ -1,7 +1,10 @@
 # :christmas_tree: AOC2022
 
-![](https://img.shields.io/static/v1?style=flat&message=C%2b%2b&label=&logo=cplusplus&labelColor=00599c&color=005999)
 ![](https://img.shields.io/static/v1?style=flat&message=CC%20BY-NC-SA%204.0&label=&logo=creativecommons&logoColor=000&labelColor=ef9421&color=ef9421)
+![](https://img.shields.io/static/v1?style=flat&message=C%2b%2b&label=&logo=cplusplus&labelColor=00599c&color=005999)
+![](https://img.shields.io/static/v1?style=flat&message=Conventional%20Commits&label=&logo=conventionalcommits&logoColor=000&labelColor=fe5196&color=fe5196)
+![](https://img.shields.io/static/v1?style=flat&message=CLion&label=&logo=clion&labelColor=000h&color=000)
+
 
 Soluciones al Advent of Code 2022 en C++, orientadas como material docente para la asignatura de Fundamentos de la Programación del Grado en Ingeniería Informática de la Universidad de Jaén.
 
