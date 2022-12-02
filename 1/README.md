@@ -359,7 +359,7 @@ El código de esta función es muy sencillo, ya que únicamente necesitamos suma
 
 ````c++
 int total_calorias(const Elfo &elfo) {
-int suma_calorias = 0;
+    int suma_calorias = 0;
 
     for (int pos = 0; pos < elfo.numero_entradas; ++pos) {
         suma_calorias += elfo.calorias[pos];
@@ -385,3 +385,74 @@ Ahora ya nos queda en el programa principal reservar memoria para toda la inform
 > 
 > ![representación de la memoria dinámica para los elfos](https://github.com/Griger/AOC2022/blob/main/1/img/memoria-dinamica.png)
 
+Para hacer estas reservas de memoria, y luego introducir los datos en sus respectivas posiciones, tendremos que leer el fichero tres veces. Por el modo que tiene C++ de leer los ficheros, podemos pensar que tenemos un cursor, que es como cuando las personas que están comenzando a aprender a leer usan un dedo para indicar por dónde van leyendo. Entonces, en C++ cuando llegamos al final del fichero, ese dedo se queda justo al final de la página, y si queremos volver al comienzo tenemos que colocar de nuevo ese dedo al comienzo de forma explícita. Para ello, en el código empleamos las siguientes dos líneas, las cuales aparecerán varias veces en el código, cada vez que queramos volver a leer el fichero de entrada desde el principio.
+
+````c++
+archivo_entrada.clear();
+archivo_entrada.seekg(0, ios::beg);
+````
+
+A continuación voy a describir el resto del código novedoso con respecto a la solución que hemos comentado anteriormente, sin detenerme por ejemplo en explicar de nuevo el código para leer el archivo línea por línea. Así, lo primero que hacemos es declarar la variable que apunta a la región de memoria donde almacenaremos la información de los elfos.
+
+## Reservando memoria: 2 niveles de memoria
+
+````c++
+Elfo* elfos;
+````
+
+Y después, contaremos cuántas líneas en blanco hay en el documento para saber cuántos elfos existentes (sumando uno más, ya que recordemos que al final del último grupo de entradas no encontramos una línea en blanco).
+
+````c++
+while (getline(archivo_entrada, linea)) {
+            if (linea == "") numero_elfos++;
+        }
+
+numero_elfos++;
+````
+
+Una vez que tenemos el número de elfos que existen podemos reservar la memoria que necesitamos para almacenar la información de cada elfo:
+
+````c++
+elfos = new Elfo[numero_elfos];
+````
+
+Así ahora la variable `elfos` apunta al comienzo de una región de memoria que hemos reservado y que tiene espacio para tantos elfos como hayamos contado en `numero_elfos`. Ahora, para cada elfo, he de hacer que su campo `calorias` sea un puntero que apunte a una región de memoria con tamaño suficiente para almacenar tantas entradas de caloría, tantos `int`, como haya para él en el fichero:
+
+1. Al igual que cuando sumábamos las calorías de cada grupo, contaremos líneas no vacías, que será el número de líneas que pertenezcan al elfo actual.
+2. Cuando lleguemos a una línea en blanco sabremos que hemos llegado al final de la información de ese elfo, y pasaremos a reservar para él tanta memoria como sea necesaria. Así como a actualizar el valor de su campo `numero_entradas_inventario`.
+
+````c++
+while (getline(archivo_entrada, linea)) {
+   if (linea != "") {
+       numero_entradas_inventario++;
+   } else {
+       elfos[contador_elfos].numero_entradas = numero_entradas_inventario;
+       elfos[contador_elfos].calorias = new int[numero_entradas_inventario];
+       numero_entradas_inventario = 0;
+       contador_elfos++;
+   }
+}
+````
+El siguiente bucle en el que para cada elfo rellenamos sus datos de calorías no vamos a explicarlo en profundidad, ya que creemos que tiene un funcionamiento claro una vez visto todo lo anterior.
+
+Entonces, ya tenemos toda la información que necesitamos para los elfos, solucionar el problema es tan sencillo como cualquier problema para encontrar el máximo valor en un vector. Ya hemos visto, cuando hemos explicado el código de la función `total_calorias` que cuando tenemos un puntero apuntando a una región de memoria que contiene $n$ objetos de un cierto tipo, podemos usar la aritmética de punteros para con el operador `[]` acceder a cada uno de esos elementos de manera ordenada. Entonces el código con el que buscamos la máxima suma de calorías es el que siempre usamos para buscar el máximo elemento de un vector. La única diferencia es que ahora, en lugar de comparar directamente el valor `v[i]` con el máximo actual, lo que comparamos es el valor devuelto por la función `total_calorias` para cada elfo.
+
+Y una vez tenemos ese máximo lo único que nos queda es liberar la memoria. Que igual que antes hemos reservado en dos pasos, ahora también la tendremos que liberar en dos pasos, *de dentro hacia fuera*.
+
+## Liberando memoria: 2 niveles de memoria
+
+Si nos fijamos en el esquema de memoria reservada que hemos mostrado antes, vemos que tenemos una primera memoria reservada para los elfos, **dentro de la cual tenemos los punteros que referencia a las otras regiones de memoria que hemos reservado**, en las cuales almacenamos las calorías de cada elfo.
+
+Entonces, si liberásemo primero la memoria destinada a almacenar la información de cada elfo perderíamos esos punteros, por tanto, perderíamos las únicas referencias que tenemos al resto de regiones de memoria que hemos reservado, y no las podríamos liberar.
+
+Así que para hacerlo correctamente tenemos que primero liberar la memoria asignada a cada elfo para almacenar sus calorías. Y una vez tenemos estas regiones liberadas y, por tanto, no nos hacen falta los punteros, pasamos a liberar la región de memoria donde almacenamos la información de los elfos.
+
+````c++
+for (int pos = 0; pos < numero_elfos; ++pos) {
+    delete[] elfos[pos].calorias;
+}
+
+delete[] elfos;
+````
+
+> Recuerda que cuando hemos reservado memoria para varios objetos que se almacenan de forma contigua, reservando memoria con los corchetes, para liberarla también has de usar los corchetes.
