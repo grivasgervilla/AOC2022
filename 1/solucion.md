@@ -58,3 +58,24 @@ archivo_entrada.close();
 3. En el bucle `while`, por cada vuelta, guardamos en la variable `linea` la línea del fichero que acabamos de leer, y en la siguiente vuelta se leerá la siguiente. El bucle parará cuando no queden más líneas por leer.
 4. Si quiesiéramos, como será nuestro caso, usar la línea leída como un entero, entonces podremos usar la función `stoi`. La cual convierte un string en el entero correspondiente.
 
+# Solución de la primera parte
+
+Ya hemos visto en clase cómo encontrar el máximo de un vector de valores:
+
+1. Creamos una variable donde almacenaremos el máximo. Inicializándolo a un valor que sea menor o igual que cualquier otro valor que podamos encontrarnos en el vector: $0$ en el caso de trabajar con valores enteros positivos, como es el caso de este problema, o la constante `INT_MIN`, que es el valor *más pequeño posible* que podemos introducir en una variable de tipo `int`. También lo podemos inicializar a `v[0]`; el primer elemento del vector.
+2. Ahora pasaríamos a recorrer el vector desde el principio hasta el final, y para cada valor, en caso de que sea mayor que el máximo actual que tenemos, actualizaríamos el valor del máximo a ese nuevo valor, ya que es el valor más grande *que hemos encontrado hasta el momento*.
+3. Al final del bucle por tanto, la variable en la que vamos almacenando el máximo quedará con el valor mayor que hayamos encontrado en nuestro recorrido del vector, es decir, el máximo del vector como nosotros queríamos.
+
+>Recuerda que la primera posición de un vector es la posición `0`, no la `1`. C++ comienza a numerar las posiciones de un vector, al igual que las posiciones de un `string` en 0. Por lo tanto, la última posición de un vector de tamaño $5$, será la `4`, y no la `5`, ya que comenzamos a contar en $0$, y no en $1$.
+>
+>Así, en general, para un vector de tamaño `tam` tendremos las posicones desde la `0` hasta la `tam-1`. Es por esto que normalmente en los bucles `for` con los que recorremos los vectores, inicializamos el índice como `int pos = 0`, y paramos antes de llegar a `tam`, `pos < tam`, que sería equivalente a poner `pos <= tam - 1`.
+
+Con la idea en mente de cómo encontrar el máximo de un vector, vamos a buscar, de entre todos los grupos del fichero de entrada, cuál es aquel que tiene la suma de sus elementos mayor. En particular, no nos interesa saber qué grupo es, solo conocer la suma de sus elementos, que será la varible que vayamos almacenando para, si encontramos una suma mayor, actualizar su valor, igual que actualizábamos el valor máximo cuando encontrábamos un elemento más grande en el vector. De aquí ya obtenemos algo: **necesitamos una variable `calorias_maximas` que almacene la suma más grande de calorías que hemos encontrado hasta el momento**.
+
+>Las variables son como cajas 📦 en las que almacenamos valores que vamos a querer utilizar más adelante en nuestro código. Cuando detectemos que un cierto valor que calculemos, o que tengamos porque lo hemos pedido al usuario, o leído de un fichero, lo vamos a necesitar más adelante, entonces lo almacenaremos en una variable del tipo adecuado. Para poder acceder de nuevo a ese valor, y no tener que volver a calcularlo o pedirlo de nuevo al usuario.
+>
+>Del mismo modo, las variables nos pueden servir para mejorar la legibilidad de nuestro código:
+>
+>Imagina que tenemos un código que dada la masa de un objeto calcula su peso, con la fórmula $P = m * g$, siendo $g$ la fuerza de la gravedad. Nosotros podríamos tener un código que calculase el peso como `peso = masa * 9.81;`, pero aquí el `9.81` sería un *número mágico*, un número que no se sabe quién qué es (este es un ejemplo muy simple, y podemos deducir qué es ese valor, pero en códigos más complejos sería más difícil dilucidar qué es ese valor). Sería mejor declarar una variable, que la podemos hacer incluso constante, `const float g = 9.81;`, y ya usarla en nuestro código como `peso = masa * g;`, que es mucho más legible, incluso es exactamente como estamos acostumbrados a leer la fórmula de la gravedad, con lo que nuestro código sería más intuitivo y fácil de leer.
+
+Por lo tanto ahora mismo tenemos el siguiente código (voy a ir generando el código a medida que explico el razonamiento que sigo para escribirlo, aunque evidentemente aquí me salto parte del ensayo-error que implica en muchas ocasiones escribir un programa, pero en general quiero plasmar el razonamiento que he seguido para escribir el código de la solución):
