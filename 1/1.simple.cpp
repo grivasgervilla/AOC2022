@@ -9,7 +9,7 @@ int main() {
     string ruta_archivo_entrada = "input.txt";
     fstream archivo_entrada;
 
-    int calorias_maximas = 0, calorias_actuales = 0;
+    int calorias_maximas = 0, calorias_grupo_actual = 0;
 
     // Abrimos el archivo para leerlo.
     archivo_entrada.open(ruta_archivo_entrada, ios::in);
@@ -20,17 +20,17 @@ int main() {
 
         while (getline(archivo_entrada, linea)) {
             if (linea != ""){
-                calorias_actuales += stoi(linea);
+                calorias_grupo_actual += stoi(linea);
             }
             else{
-                if (calorias_actuales > calorias_maximas)
-                    calorias_maximas = calorias_actuales;
-                calorias_actuales = 0;
+                if (calorias_grupo_actual > calorias_maximas)
+                    calorias_maximas = calorias_grupo_actual;
+                calorias_grupo_actual = 0;
             }
         }
 
-        if (calorias_actuales > calorias_maximas)
-            calorias_maximas = calorias_actuales;
+        if (calorias_grupo_actual > calorias_maximas)
+            calorias_maximas = calorias_grupo_actual;
 
         cout << "Las calorias maximas que lleva un elfo son: " << calorias_maximas << endl;
         archivo_entrada.close();
