@@ -118,9 +118,9 @@ Pasamos la línea como constante y por referencia, ya que no necesitamos modific
 Bien, esta función va a tener dos partes, que para modularizar más el código, lo cual casi siempre es beneficioso, vamos a realizarlas en dos funciones distintas:
 
 ````c++
-int bonus_por_eleccion (string eleccion)
+int bonus_por_eleccion (string eleccion);
 
-int bonus_por_resultado (string eleccion, string eleccion_contrincante)
+int bonus_por_resultado (string eleccion, string eleccion_contrincante);
 ````
 
 Además, para hacer más legible el código, vamos a encargarnos de traducir las letras que aparecen en la entrada del problema por «piedra», «papel» o «tijeras», para ello vamos a definir una función adicional que reciba el `char` de la entrada del programa y devuelva el `string` correspondiente, según el código que hemos visto al comienzo del programa. 
@@ -169,7 +169,7 @@ int procesar_partida (const string &info_partida) {
 
 Observa lo limpio y claro que queda el código de esta función, simplemente realiza la traducción, y luego devuelve la suma de los dos valores devueltos por las dos funciones que se encargan de calcular los dos bonus de puntuación. Si no tuviésemos esas dos funciones auxiliares, tendríamos todo el código necesario para calcular los dos bonus en el cuerpo de esta función, lo que resultaría en un código menos legible y más lioso. Así, **modularizando** nuestro código queda más compartimentado y limpio, facilitando la corrección de errores.
 
-> Trata de descomponer tu problema en distintas partes y *encapsula* cada una de estas partes en una función que se encargue **solo y exclusivamente** de resolver ese problema. Luego combina esas funciones en el orden apropiado para resolver tu problema.
+> Trata de descomponer tu problema en distintas partes, y *encapsula* cada una de estas partes en una función que se encargue **solo y exclusivamente** de resolver ese problema. Luego combina esas funciones en el orden apropiado para resolver tu problema.
 > 
 > Así obtendrás un código más limpio y claro, facilitándote la corrección de posibles errores. Además, el dividr el problema en subproblemas más pequeños, te facilitarán el razonamiento a la hora de diseñar la lógica de tu código para resolver el problema completo.
 > 
@@ -202,3 +202,229 @@ int bonus_por_eleccion (string eleccion){
 ````
 
 ### Calculando el bonus por resultado
+
+Para calcular el bonus con el resultado vamos a usar una sentencia condicional anidada. Podríamos buscar soluciones más elegantes, pero esto nos servirá para profundizar un poco más en los condicionales, y entender bien cómo funcionan y cómo podemos anidarlos.
+
+En el siguiente esquema se resumen las distintas bifurcaciones que podemos tener dentro de una partida:
+
+![esquema piedra papel y tijera](https://github.com/Griger/AOC2022/blob/main/2/img/piedra-papel-tijera.png)
+
+Ahora vamos a ir viendo, poco a poco cómo podemos traducir esto en forma de código, viendo tanto el diagrama de flujo del programa, como el código resultante. Recuerda que en los diagramas de flujo representamos las condiciones mediante nodos en forma de rombo (:diamonds:), y las instrucciones secuenciales (por ejemplo los bloques de código que se encuentran dentro de cada `if` y de cada `else`) las representamos con nodos en forma de cuadrado (:yellow_square:).
+
+En un primer intento podríamos comprobar el resultado de la partida para cada una de las elecciones que podemos elegir por separado:
+
+````mermaid
+flowchart LR
+  subgraph PIEDRA
+    direction LR
+    cond11{Elige piedra} --> empate1[empate]
+
+	cond12{Elige tijeras} --> victoria1[victoria]
+
+	cond13{Elige papel} --> derrota1[derrota]
+  end
+  cond1{Elijo piedra} --> PIEDRA
+
+  subgraph TIJERAS
+    direction LR
+    cond21{Elige piedra} --> empate2[derrota]
+
+	cond22{Elige tijeras} --> victoria2[empate]
+
+	cond23{Elige papel} --> derrota2[victoria]
+  end
+  cond2{Elijo tijeras} --> TIJERAS
+
+  subgraph PAPEL
+    direction LR
+    cond31{Elige piedra} --> empate3[victoria]
+
+	cond32{Elige tijeras} --> victoria3[derrota]
+
+	cond33{Elige papel} --> derrota3[empate]
+  end
+  cond3{Elijo papel} --> PAPEL
+````
+
+En este caso, vamos a comprobar cada condición por separado, es decir, usaremos `if` aislados. Un `if` funciona del siguiente modo:
+
+1. Comprobamos la condición entre paréntesis.
+2. Si el resultado de esa condición es `true` entonces ejecutaremos las instrucciones que haya en el cuerpo del `if` (si no ponemos llaves `{}` C++ interpretará que el cuerpo del `if` está compuesto únicamente por la primera línea que encuentre, por ello, si en un `if` tenemos una única instrucción no necesitamos poner llaves, **aunque sí es recomendable tabular correctamente esa línea de código, para remarcar que está dentro del `if` y que así nuestro código se lea mejor).
+
+Con el esquema que hemos mostrado anteriormente (donde una flecha indica que se da la condición que tenemos en el nodo con forma de rombo), el código quedaría como sigue:
+
+````c++
+if (eleccion == PIEDRA){
+    if (eleccion_contrincante == PIEDRA)
+        bonus = BONUS_EMPATE;
+    if (eleccion_contrincante == TIJERAS)
+        bonus = BONUS_VICTORIA;
+    if (eleccion_contrincante == PAPEL)
+        bonus = BONUS_EMPATE;
+}
+
+if (eleccion == TIJERAS){
+    if (eleccion_contrincante == PIEDRA)
+        bonus = BONUS_DERROTA;
+    if (eleccion_contrincante == TIJERAS)
+        bonus = BONUS_EMPATE;
+    if (eleccion_contrincante == PAPEL)
+        bonus = BONUS_VICTORIA;
+}
+
+if (eleccion == PAPEL){
+    if (eleccion_contrincante == PIEDRA)
+        bonus = BONUS_VICTORIA;
+    if (eleccion_contrincante == TIJERAS)
+        bonus = BONUS_DERROTA;
+    if (eleccion_contrincante == PAPEL)
+        bonus = BONUS_EMPATE;
+}
+````
+
+> Cada condicional que pongamos en nuestro código, cada `if` crea un camino alternativo compuesto por todas las instrucciones en el cuerpo de ese `if`. Entonces, si la condición del `if` es verdadera, entraremos en ese camino, lo recorreremos, ejecutando las instrucciones que compongan el cuerpo del `if`, y cuando lleguemos al final seguiremos por el camino normal del código, ejecutando el resto de instrucciones que haya después de ese `if`.
+
+Este código es correcto, y funcionará correctamente. Sin embargo, hay comprobaciones que nos podemos ahorrar, ya que si por ejemplo hemos escogido piedra, no habremos escogido ni tijeras ni papel, con lo que las condiciones de los otros dos `if` serán falsas sí o sí. Por lo tanto, estas comprobaciones realmente serán necesarias **solo si la primera es falsa**, para ello tenemos los `else`, caminos alternativos en nuestro código que se ejecutan cuando la condición que evaluamos en un `if` es falsa. Esto se correspondería con el siguiente diagrama de flujo:
+
+````mermaid
+flowchart LR
+  subgraph PIEDRA
+    direction LR
+    cond11{Elige piedra} -- Sí --> empate1[empate]
+		cond11 -- No --> cond12
+
+		cond12{Elige tijeras} -- Sí --> victoria1[victoria]
+
+		cond12 -- No --> derota1[derrota]
+  end
+	cond1{Elijo piedra} -- Sí --> PIEDRA
+	cond1 -- No --> cond2
+
+  subgraph TIJERAS
+    direction LR
+    cond21{Elige piedra} -- Sí --> empate2[empate]
+		cond21 -- No --> cond22
+
+		cond22{Elige tijeras} -- Sí --> victoria2[victoria]
+		cond22 -- No --> derota2[derrota]
+  end
+	cond2{Elijo tijeras} -- Sí --> TIJERAS
+
+  subgraph PAPEL
+    direction LR
+    cond31{Elige piedra} -- Sí --> empate3[empate]
+		cond31 -- No --> cond32
+
+		cond32{Elige tijeras} -- Sí --> victoria3[victoria]
+		cond32 -- No --> derota3[derrota]
+  end
+	cond2 -- No --> PAPEL
+````
+
+Este diagrama de flujo se traduciría en el siguiente código:
+
+````c++
+if (eleccion == PIEDRA){
+    if (eleccion_contrincante == PIEDRA)
+        bonus = BONUS_EMPATE;
+    else {
+        if (eleccion_contrincante == TIJERAS)
+            bonus = BONUS_VICTORIA;
+        else
+            bonus = BONUS_DERROTA;
+    }
+} else {
+    if (eleccion == TIJERAS) {
+        if (eleccion_contrincante == PIEDRA)
+            bonus = BONUS_DERROTA;
+        else {
+            if (eleccion_contrincante == TIJERAS)
+                bonus = BONUS_EMPATE;
+            else
+                bonus = BONUS_VICTORIA;
+        }
+    }
+    else {
+        if (eleccion_contrincante == PIEDRA)
+            bonus = BONUS_VICTORIA;
+        else {
+            if (eleccion_contrincante == TIJERAS)
+                bonus = BONUS_DERROTA;
+            else
+                bonus = BONUS_EMPATE;
+        }
+    }
+}
+````
+
+Con este código ya evitaremos las comprobaciones que no son necesarias en cuanto una de las anteriores es correcta, sin embargo hay un modo más compacto de escribirlo, y es que como hemos dicho, si no ponemos llave, C++ asumirá que el cuerpo del `if` o del `else` está compuesto por una sola línea de código, la siguiente que se encuentre. Entonces podemos escribir en la misma línea un `else` y el `if` siguiente que queremos comprobar **dentro de ese `else`**. De este modo, C++ interpretará que para ese `else` se ha de ejecutar la siguiente línea, el `if`, y ya entraríamos en las bifurcaciones correspondientes a ese `if`. El funcionamiento es el mismo, solo que lo escribimos de un modo más compacto:
+
+````c++
+if (eleccion == PIEDRA){
+    if (eleccion_contrincante == PIEDRA)
+        bonus = BONUS_EMPATE;
+    else if (eleccion_contrincante == TIJERAS)
+            bonus = BONUS_VICTORIA;
+    else
+            bonus = BONUS_DERROTA;
+} else if (eleccion == TIJERAS) {
+    if (eleccion_contrincante == PIEDRA)
+        bonus = BONUS_DERROTA;
+    else if (eleccion_contrincante == TIJERAS)
+        bonus = BONUS_EMPATE;
+    else
+        bonus = BONUS_VICTORIA;
+} else {
+    if (eleccion_contrincante == PIEDRA)
+        bonus = BONUS_VICTORIA;
+    else if (eleccion_contrincante == TIJERAS)
+        bonus = BONUS_DERROTA;
+    else
+        bonus = BONUS_EMPATE;
+}
+````
+
+Observa que también cambiamos la tabulación del código para que quede algo más legible. Por ejemplo cuando el usuario elige piedra, y pasamos a comprobar la elección del contrincante, el último `else` no lo ponemos a la misma altura de la palabra `if` anterior (aunque realmente está relacionado directamente con él, ya que ese `else` se ejecutará si el `if` anterior evalúa a falso), si no que lo ponemos a la altura de la palabra `else` anterior. De este modo, aunque la tabulación no afecta para nada en cómo funciona el código, sí que dotamos al código de una mayor carga semántica. Ahora es como si tuviésemos tres caminos paralelos, ejecutando, de izquierda a derecha, solo el primero que evalúa a verdadero:
+
+- Si el contrincante elige piedra tendremos un empate.
+- En caso contrario pasamos a ver si ha elegido tijeras, y si es el caso tendremos victoria.
+- Y por último, si esta condición tampoco es verdadera pasamos al tercer y último camino, en cuyo caso tendremos derrota.
+
+Con este último código completamos la función `bonus_por_resultado`:
+
+````c++
+int bonus_por_resultado (string eleccion, string eleccion_contrincante){
+    int bonus;
+    
+    if (eleccion == PIEDRA){
+        if (eleccion_contrincante == PIEDRA)
+            bonus = BONUS_EMPATE;
+        else if (eleccion_contrincante == TIJERAS)
+            bonus = BONUS_VICTORIA;
+        else
+            bonus = BONUS_DERROTA;
+    } else if (eleccion == TIJERAS) {
+        if (eleccion_contrincante == PIEDRA)
+            bonus = BONUS_DERROTA;
+        else if (eleccion_contrincante == TIJERAS)
+            bonus = BONUS_EMPATE;
+        else
+            bonus = BONUS_VICTORIA;
+    } else {
+        if (eleccion_contrincante == PIEDRA)
+            bonus = BONUS_VICTORIA;
+        else if (eleccion_contrincante == TIJERAS)
+            bonus = BONUS_DERROTA;
+        else
+            bonus = BONUS_EMPATE;
+    }
+    
+    return bonus;
+}
+````
+
+> Observa que, aunque en algunos de los condicionales sabemos que tenemos que devolver el bonus por victoria, derrota o empate, en lugar de poner en cada uno de estos condicionales un `return`, lo que hacemos es declarar una variable que ponemos al valor que corresponda devolver, y **al final del código tenemos un único return**.
+> 
+> Esto nos puede ahorrar ciertos errores, ya que a veces ponemos un `return` porque creemos que la función puede acabar ahí y que nos ahorraremos así pasos. Sin embargo, hay ocasiones en las que no hemos programado bien nuestra función, y cuando falla no sabemos por qué, en ciertos casos porque no nos estamos dando cuenta de dónde está acabando nuestra función, porque tenemos varios `return` en su código, y esto nos hace más complicado controlar el comportamiento de la función.
+> 
+> Por ejemplo, podemos equivocarnos y poner unos de estos `return` dentro de un `for` interno de dos bucles `for` anidados, cuando realmente solo lo queremos poner en el `for` externo. Quizás, si no tuviésemos ese `return` adicional sería más fácil comprobar en qué nos estamos equivocando.

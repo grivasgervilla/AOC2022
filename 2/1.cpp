@@ -41,6 +41,35 @@ int bonus_por_eleccion (string eleccion){
     return bonus;
 }
 
+int bonus_por_resultado (string eleccion, string eleccion_contrincante){
+    int bonus;
+
+    if (eleccion == PIEDRA){
+        if (eleccion_contrincante == PIEDRA)
+            bonus = BONUS_EMPATE;
+        else if (eleccion_contrincante == TIJERAS)
+            bonus = BONUS_VICTORIA;
+        else
+            bonus = BONUS_DERROTA;
+    } else if (eleccion == TIJERAS) {
+        if (eleccion_contrincante == PIEDRA)
+            bonus = BONUS_DERROTA;
+        else if (eleccion_contrincante == TIJERAS)
+            bonus = BONUS_EMPATE;
+        else
+            bonus = BONUS_VICTORIA;
+    } else {
+        if (eleccion_contrincante == PIEDRA)
+            bonus = BONUS_VICTORIA;
+        else if (eleccion_contrincante == TIJERAS)
+            bonus = BONUS_DERROTA;
+        else
+            bonus = BONUS_EMPATE;
+    }
+
+    return bonus;
+}
+
 int procesar_partida (const string &info_partida) {
     string eleccion_nuestra = traducir_eleccion(info_partida[2]);
     string eleccion_contrincante = traducir_eleccion(info_partida[0]);
