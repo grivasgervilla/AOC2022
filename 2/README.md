@@ -428,3 +428,125 @@ int bonus_por_resultado (string eleccion, string eleccion_contrincante){
 > Esto nos puede ahorrar ciertos errores, ya que a veces ponemos un `return` porque creemos que la función puede acabar ahí y que nos ahorraremos así pasos. Sin embargo, hay ocasiones en las que no hemos programado bien nuestra función, y cuando falla no sabemos por qué, en ciertos casos porque no nos estamos dando cuenta de dónde está acabando nuestra función, porque tenemos varios `return` en su código, y esto nos hace más complicado controlar el comportamiento de la función.
 > 
 > Por ejemplo, podemos equivocarnos y poner unos de estos `return` dentro de un `for` interno de dos bucles `for` anidados, cuando realmente solo lo queremos poner en el `for` externo. Quizás, si no tuviésemos ese `return` adicional sería más fácil comprobar en qué nos estamos equivocando.
+
+# Solución a la segunda parte
+
+La segunda parte de este reto es muy fácil de implementar si hemos hecho bien las cosas en la anterior, usando constante para evitar usar *valores mágicos*, y usando funciones para modularizar nuestro código. Gracias a que en la solución anterior hemos descompuesto la solución en distintos pasos, que luego hemos traducido en distintas funciones, ahora no tenemos más que reutilizar aquellas funciones que nos sirvan, modificar aquellas que requieran una modificación y crear alguna función adicional que podamos necesitar.
+
+En particular, para esta parte del ejercicio lo que se nos indica es que ahora, la entrada que recibimos tiene otro significado:
+
+* La primera fila sigue indicando qué movimiento hace el rival, qué elige: piedra, papel o tijeras.
+* Pero ahora la segunda nos indica que resultado debemos obtener en la partida:
+
+|Letra resultado| Representa |
+|---|------------|
+|X| Derrota    |
+|Y| Empate     |
+|Z| Victoria   |
+
+La puntuación para cada partida se calcula del mismo modo: bonus por el movimiento elegido, más el bonus por el resultado obtenido.
+
+Entonces ahora necesitaremos una función `elegir_movimiento` que, según el movimiento hecho por el contrincante, y el resultado que queramos obtener, nos indique qué movimiento hemos de hacer nosotros:
+
+````c++
+string elegir_movimiento (string eleccion_contrincante, string resultado_esperado){
+    string movimiento;
+
+    if (eleccion_contrincante == PIEDRA){
+        if (resultado_esperado == VICTORIA)
+            movimiento = PAPEL;
+        else if (resultado_esperado == DERROTA)
+            movimiento = TIJERAS;
+        else
+            movimiento = PIEDRA;
+    }
+    else if (eleccion_contrincante == TIJERAS) {
+        if (resultado_esperado == VICTORIA)
+            movimiento = PIEDRA;
+        else if (resultado_esperado == DERROTA)
+            movimiento = PAPEL;
+        else
+            movimiento = TIJERAS;
+    }
+    else {
+        if (resultado_esperado == VICTORIA)
+            movimiento = TIJERAS;
+        else if (resultado_esperado == DERROTA)
+            movimiento = PIEDRA;
+        else
+            movimiento = PAPEL;
+    }
+
+    return movimiento;
+}
+````
+
+Observa lo sencillo que resulta programar la lógica de esta aplicación, y lo legible que resulta, gracias al uso de las constantes que sustituyen a los *valores mágicos* como los `string` que usamos para indicar si hemos elegido por ejemplo tijeras, o en este caso, si el resultado esperado es una derrota o una victoria.
+
+````c++
+const string VICTORIA = "victoria";
+const string DERROTA = "derrota";
+const string EMPATE = "empate";
+````
+
+También hemos descompuesto en dos partes el método que se encarga de traducir las letras de la entrada del reto en cadenas de texto con mayor semántica, ya que una de las columnas se traduce en el movimiento elegido por el contrincante, y la segunda se traduce en qué resultado queremos obtener:
+
+````c++
+string traducir_eleccion_contrincante (char eleccion){
+    string traduccion;
+
+    if (eleccion == 'A')
+        traduccion = PIEDRA;
+    else if (eleccion == 'B')
+        traduccion = PAPEL;
+    else
+        traduccion = TIJERAS;
+
+    return traduccion;
+}
+
+string traducir_resultado_deseado (char resultado){
+    string traduccion;
+
+    if (resultado == 'X')
+        traduccion = DERROTA;
+    else if (resultado == 'Y')
+        traduccion = EMPATE;
+    else
+        traduccion = VICTORIA;
+
+    return traduccion;
+}
+````
+
+También cambia el código del método que nos dice, para el resultado obtenido, la bonificación de puntos obtenida por resultado. Ahora no necesitamos conocer el movimiento del contrario y el nuestro, ya que sabemos a priori el resultado que se va a obtener, puesto que nos lo indica ahora la segunda columna de la entrada:
+
+````c++
+int bonus_por_resultado (string resultado){
+    int bonus;
+
+    if (resultado == VICTORIA)
+        bonus = BONUS_VICTORIA;
+    else if (resultado == DERROTA)
+        bonus = BONUS_DERROTA;
+    else
+        bonus = BONUS_EMPATE;
+
+    return bonus;
+}
+````
+
+Y ya por último solo nos queda cambiar ligeramente el código de la función que se encarga de procesar y puntuar cada partida:
+
+````c++
+int procesar_partida (const string &info_partida) {
+    string eleccion_contrincante = traducir_eleccion_contrincante(info_partida[0]);
+    string resultado_esperado = traducir_resultado_deseado(info_partida[2]);
+
+    string eleccion_necesaria = elegir_movimiento(eleccion_contrincante, resultado_esperado);
+
+    return bonus_por_eleccion(eleccion_necesaria) + bonus_por_resultado(resultado_esperado);
+}
+````
+
+Ahora, cada columna de la entrada se traduce por uno de los dos métodos, según corresponda. Y luego obtenemos qué movimiento hemos de realizar según el resultado esperado. Y ya finalmente evaluamos la partida como siempre. 
