@@ -1,4 +1,4 @@
-# El problema
+# Día 1 :balance_scale:
 
 Aunque el enunciado lo cuenta de otra forma, para simplificarlo vamos a enunciarlo como sigue:
 

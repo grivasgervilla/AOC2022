@@ -249,7 +249,7 @@ flowchart LR
 En este caso, vamos a comprobar cada condición por separado, es decir, usaremos `if` aislados. Un `if` funciona del siguiente modo:
 
 1. Comprobamos la condición entre paréntesis.
-2. Si el resultado de esa condición es `true` entonces ejecutaremos las instrucciones que haya en el cuerpo del `if` (si no ponemos llaves `{}` C++ interpretará que el cuerpo del `if` está compuesto únicamente por la primera línea que encuentre, por ello, si en un `if` tenemos una única instrucción no necesitamos poner llaves, **aunque sí es recomendable tabular correctamente esa línea de código, para remarcar que está dentro del `if` y que así nuestro código se lea mejor).
+2. Si el resultado de esa condición es `true` entonces ejecutaremos las instrucciones que haya en el cuerpo del `if` (si no ponemos llaves `{}` C++ interpretará que el cuerpo del `if` está compuesto únicamente por la primera línea que encuentre, por ello, si en un `if` tenemos una única instrucción no necesitamos poner llaves, **aunque sí es recomendable tabular correctamente esa línea de código, para remarcar que está dentro del `if` y que así nuestro código se lea mejor**).
 
 Con el esquema que hemos mostrado anteriormente (donde una flecha indica que se da la condición que tenemos en el nodo con forma de rombo), el código quedaría como sigue:
 
