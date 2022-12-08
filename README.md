@@ -18,7 +18,7 @@ En la siguiente tabla se recogen los distintos retos que se han resuelto con:
 
 | Ejercicio                                              | Temáticas                                                                                      | Esquemas                                                                         |
 |--------------------------------------------------------|------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| [Día 1](https://github.com/Griger/AOC2022/tree/main/1) | :arrows_clockwise: bucles, :bento: struct, :factory: funciones, :floppy_disk: memoria dinámica | :mag_right: buscar el máximo                                                     
+| [Día 1](https://github.com/Griger/AOC2022/tree/main/1) | :arrows_clockwise: bucles, :bento: struct, :factory: funciones, :floppy_disk: memoria dinámica | :mag_right: buscar el máximo                                                     |
 | [Día 2](https://github.com/Griger/AOC2022/tree/main/2) | :question: condicionales, :factory: funciones                                                  | :nesting_dolls: condiciones anidadas                                             |
 | [Día 3](https://github.com/Griger/AOC2022/tree/main/3) | :abc: cadenas, :factory: funciones                                                             | :mag: buscar elemento, :arrow_right_hook: devolver varios valores por referencia |
 ---
