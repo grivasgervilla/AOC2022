@@ -71,7 +71,7 @@ Como vemos, una vez extraemos lo que necesitamos de la cadena, lo único que hac
 
 ## Función que analiza cada par de rangos
 
-En esta función simplemente tenemos que comprobar, dados dos intervalos, si uno está incluído en otro, que esto simplemente lo hacemos con una sentencia booleana.
+En esta función simplemente tenemos que comprobar, dados dos intervalos, si uno está incluido en otro, que esto simplemente lo hacemos con una expresión booleana.
 
 ````c++
 bool comprobar_inclusion(const Par &par){
@@ -100,6 +100,24 @@ while (getline(archivo_entrada, linea)){
 }
 ````
 
-> El valor devuelto por una función puede ser utilizado como cualquier otro valor de ese tipo en nuestro código, **sin que necesitemos almacenar ese valor en una variable, para luego usar la variable.
+> El valor devuelto por una función puede ser utilizado como cualquier otro valor de ese tipo en nuestro código, **sin que necesitemos almacenar ese valor en una variable, para luego usar la variable**.
 > 
 > Aunque en ocasiones el código quedará más legible si hacemos esto último. Pero aquí podemos ver que esto no es necesario.
+
+# Solución a la segunda parte
+
+La segunda parte de este reto es muy sencilla una vez hemos resuelto la primera. En este caso, en lugar de contabilizar los pares de rangos en los que uno está contenido en otro, tenemos que contar aquellos pares en lo que los rangos se superponen. Si un rango está incluido en otro es obvio que se superponen, pero también se superponen por ejemplo los rangos $[42,50]$ y $[30,45]$, aunque no esté uno totalmente incluido en el otro.
+
+Entonces, gracias a que **hemos modularizado** nuestra solución anterior, lo único que necesitamos cambiar es la función `comprobar_inclusion`, por una función `comprobar_solapamiento`. El resto de la solución quedaría igual: extraemos la información de la cadena, y contabilizamos aquellos pares de rangos que cumplen una cierta condición; en este caso estar solapados.
+
+````c++
+bool comprobar_solapamiento(const Par &par){
+    bool solapan = (par.primero_ext_inferior <= par.segundo_ext_inferior && par.segundo_ext_inferior <= par.primero_ext_superior) ||
+            (par.segundo_ext_inferior <= par.primero_ext_inferior && par.primero_ext_inferior <= par.segundo_ext_superior);
+
+    return solapan;
+}
+````
+
+Como vemos aquí lo único que hacemos en cambiar la expresión booleana para comprobar si solapan, y para ello vemos si el extremo inferior de uno de los rangos está incluido en el otro rango. Puedes analizar que si se da esto es justamente porque los dos intervalos solapan. Y con esto tendríamos la solución a la segunda parte. **Todo gracias a la modularización**.
+
