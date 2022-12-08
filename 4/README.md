@@ -32,4 +32,74 @@ Ahora vamos a definir la función encargada de obtener la información para un `
 
 ![esquema cadenas de entrada](https://github.com/Griger/AOC2022/blob/main/4/img/esquema-cadena.png)
 
+Teniendo en cuenta este esquema lo que vamos a hacer es:
+
+1. Encontrar la posición de la coma y los guiones con la función `string::find`.
+2. Usando esas posiciones como referencia, extraer con la función `string::substr` las distintas subcadenas que serán los distintos números de nuestro par de rangos, y pasarlas a número entero con la función `stoi`.
+
+````c++
+const char COMA = ',';
+const char GUION = '-';
+
+Par obtener_informacion_rangos(string linea){
+    Par informacion;
+
+    int pos_primer_guion, pos_coma, pos_segundo_guion;
+
+    pos_primer_guion = linea.find(GUION);
+    pos_coma = linea.find(COMA);
+    pos_segundo_guion = linea.find(GUION, pos_coma);
+
+    informacion.primero_ext_inferior = stoi(linea.substr(0, pos_primer_guion));
+    informacion.primero_ext_superior = stoi(linea.substr(pos_primer_guion + 1, pos_coma - pos_primer_guion - 1));
+    informacion.segundo_ext_inferior = stoi(linea.substr(pos_coma + 1, pos_segundo_guion - pos_coma - 1));
+    informacion.segundo_ext_superior = stoi(linea.substr(pos_segundo_guion + 1, linea.length()));
+
+    return informacion;
+}
+````
+
+> Observa que la función `find` tiene distintas formas de usarse. Con la primera le pasamos únicamente el caracter que queremos encontrar, y nos devolverá la posición **de la primera ocurrencia** de ese caracter.
+> 
+> Con la segunda le pasamos tanto el caracter como la posición *a partir de la cual* comenzar a buscar ese caracter. Esto nos sirve para encontrar la segunda ocurrencia del guion en la cadena, diciendole que lo busque a partir de la posición donde se encuentra la coma.
+> 
+> Si quisiéramos hacer esto sin usar esta segunda versión de la función `find` lo podríamos hacer como `pos_segundo_guion = pos_coma + (linea.substr(pos_coma, linea.length())).find(GUION);`.
+> 
+> Aquí vemos también una particularidad de la función `substr`, y es que si le pasamos una longitud de subcadena mayor que lo que realmente nos queda de cadena, simplemente llega hasta el final, por eso le podemos pasar simplemente `linea.length()` como tamaño de subcadena, sin preocuparnos de que «nos salgamos» de la cadena.
+
+Como vemos, una vez extraemos lo que necesitamos de la cadena, lo único que hacemos es almacenar estos datos en los campos del `struct` que hemos definido.
+
 ## Función que analiza cada par de rangos
+
+En esta función simplemente tenemos que comprobar, dados dos intervalos, si uno está incluído en otro, que esto simplemente lo hacemos con una sentencia booleana.
+
+````c++
+bool comprobar_inclusion(const Par &par){
+    bool estan_incluidos = (par.primero_ext_inferior <= par.segundo_ext_inferior && par.segundo_ext_superior <= par.primero_ext_superior) ||
+            (par.segundo_ext_inferior <= par.primero_ext_inferior && par.primero_ext_superior <= par.segundo_ext_superior);
+
+    return estan_incluidos;
+}
+````
+
+1. Observa que pasamos el `Par` como un valor constante por referencia, ya que no necesitamos modificarlo.
+2. Observa cómo componemos la condición usando los paréntesis: la primera parte antes del `||` comprueba que el segundo rango esté contenido en el primero, y la segunda parte comprueba la otra condición.
+
+Por último observa cómo usamos el valor booleano directamente devuelto por la función `comprobar_inclusion` en la condición del `if` que empleamos para aumentar, si procede, el contador `total_rangos_incluidos`.
+
+````c++
+int total_rangos_incluidos = 0;
+
+Par informacion_linea;
+
+while (getline(archivo_entrada, linea)){
+    informacion_linea = obtener_informacion_rangos(linea);
+
+    if (comprobar_inclusion(informacion_linea))
+        total_rangos_incluidos++;
+}
+````
+
+> El valor devuelto por una función puede ser utilizado como cualquier otro valor de ese tipo en nuestro código, **sin que necesitemos almacenar ese valor en una variable, para luego usar la variable.
+> 
+> Aunque en ocasiones el código quedará más legible si hacemos esto último. Pero aquí podemos ver que esto no es necesario.
