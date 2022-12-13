@@ -61,3 +61,16 @@ int localizar_marcador(const string &cadena){
 3. Comprobamos para cada subcadena si es la correcta.
 4. En cuanto la encontramos paramos el bucle `for` como siempre que estamos buscando un elemento con una cierta propiedad.
 5. La posición del último carácter será la del comienzo de esa subcadena correcta más la longitud de la cadena.
+6. Nota que el método `substr` si pedimos una subcadena demasiado larga para la cadena que tenemos, lo que hace es devolver la subcadena que comienza donde indiquemos y que termina al final de la cadena original. Por esto no nos tenemos que preocupar porque en los últimos tres caracteres de la cadena original queramos encontrar la subcadena de 4 caracteres que comienza en uno de ellos, porque simplemente obtendremos una cadena de tres, dos y un carácter, respectivamente.
+
+# Solución a la segunda parte
+
+Para solucionar la segunda parte del reto seguimos una solución similar. En esta ocasión lo que nos pide es encontrar la posición del último carácter de la primera subcadena de 14 caracteres que tiene todos sus caracteres distintos.
+
+Por tanto, leyendo el enunciado, habiendo comprendido la solución que hemos dado a la primera parte, es clara la pequeña modificación que le tenemos que hacer a nuestro código. Ya que ahora simplemente buscamos cadenas de 14 caracteres, en lugar de cadenas de 4.
+
+````c++
+const int TAM_MARCADOR = 14;
+````
+
+> Aquí vemos una ventaja de usar constante en lugar de valores mágicos. En otro caso hubiésemos tenido que cambiar en nuestro código todos los puntos donde usemos el valor 4, por el valor 14. Aquí basta con cambiar el valor de una variable.
