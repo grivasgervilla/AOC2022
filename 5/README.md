@@ -212,3 +212,30 @@ Ya solo queda, al finalizar nuestro programa, invocar a esta función para cada 
 for (int pila = 0; pila < NUM_PILAS; ++pila)
    liberar_memoria(pilas[pila]);
 ````
+
+# Solución a la segunda parte
+
+La segunda parte de este problema es, como hasta ahora, una adactación de la solución que acabamos de elaborar. Tenemos el mismo problema de mover paquetes de una pila a otra, solo que ahora los paquetes se mueven «todos a la vez», de modo que mantienen el orden en el que estuviesen en la pila de partida, al ponerlo en el tope de la nueva pila. Ahora no queda el primero de todos debajo de todos ellos.
+
+Por tanto, para obtener la solución a esta parte lo único que tenemos que hacer es cambiar la función que se encarga de realizar el movimiento. **Una de las ventajas de la modularización**.
+
+El intercambio de punteros que se hace ahora es el que se esquematiza en la siguiente imagen, donde hemos marcado los dos bloques que queremos mover en un solo movimiento.
+
+![esquema de movimiento en bloque](https://github.com/Griger/AOC2022/blob/main/5/img/movimiento-bloque.png)
+
+````c++
+void realizar_movimiento(Celda* &desde, Celda* &a, int numero_paquetes){
+    Celda* puntero_auxiliar;
+    Celda* ultimo_paquete_a_mover = desde;
+
+    for (int paquete = 0; paquete < numero_paquetes - 1; ++paquete)
+       ultimo_paquete_a_mover = ultimo_paquete_a_mover->paquete_debajo;
+
+    puntero_auxiliar = a;
+    a = desde;
+    desde = ultimo_paquete_a_mover->paquete_debajo;
+    ultimo_paquete_a_mover->paquete_debajo = puntero_auxiliar;
+}
+````
+
+Lo que hacemos en esta función es recorrer la lista enlazada correspondiente hasta situarnos en el último paquete que hay que mover, el que está más abajo. Entonces almacenamos su dirección en un puntero `ultimo_paquete_a_mover`, y realizamos el intercambio de la misma forma que hemos hecho en la primera parte del reto, pero ahora siguiendo el esquema que hemos explicado.
