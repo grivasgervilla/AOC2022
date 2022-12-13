@@ -73,4 +73,4 @@ Por tanto, leyendo el enunciado, habiendo comprendido la solución que hemos dad
 const int TAM_MARCADOR = 14;
 ````
 
-> Aquí vemos una ventaja de usar constante en lugar de valores mágicos. En otro caso hubiésemos tenido que cambiar en nuestro código todos los puntos donde usemos el valor 4, por el valor 14. Aquí basta con cambiar el valor de una variable.
+> Aquí vemos una ventaja de usar constantes en lugar de valores mágicos. En otro caso hubiésemos tenido que cambiar en nuestro código todos los puntos donde usemos el valor 4, por el valor 14. Aquí basta con cambiar el valor de una variable.
